@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Wi-Fi System</title>
+    <style>
+        /* Block highlighting and long-press globally */
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            font-family: sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none; /* Block iOS menu */
+            -webkit-user-select: none;   /* Block selection */
+            user-select: none; 
+        }
+
+        body { background-color: #000; color: #fff; height: 100dvh; overflow: hidden; }
+
+        .header { padding: 20px; display: flex; align-items: center; gap: 20px; }
+        .back-btn { font-size: 24px; }
+        h1 { font-size: 24px; font-weight: 400; }
+
+        /* The Main PLDT Blue Box */
+        .network-card {
+            margin: 10px 16px;
+            padding: 24px;
+            background: #0056b3; 
+            border-radius: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+        }
+
+        .card-row { display: flex; align-items: center; gap: 12px; }
+        .wifi-icon { font-size: 20px; }
+        .network-name { font-size: 20px; font-weight: 500; }
+        
+        /* Visible but strictly un-copyable password */
+        .pass-display { 
+            font-size: 13px; 
+            opacity: 0.7; 
+            padding-left: 32px; 
+            color: #e0e0e0; 
+            letter-spacing: 0.5px;
+        }
+
+        .arrow-btn { 
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            width: 28px; height: 28px; border-radius: 50%; 
+            background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
+        }
+
+        .section-label { padding: 20px 20px 10px; font-size: 12px; color: #444; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Password Input Sheet */
+        #input-sheet {
+            position: fixed; bottom: -100%; left: 0; width: 100%;
+            background: #1c1c1e; border-radius: 30px 30px 0 0;
+            padding: 30px 20px 400px; 
+            transition: bottom 0.4s ease; z-index: 1000; text-align: center;
+        }
+        #input-sheet.show { bottom: 0; }
+
+        .sheet-title { font-size: 22px; margin-bottom: 25px; }
+        
+        .input-box {
+            background: #2c2c2e; border: 2px solid #007aff;
+            border-radius: 18px; padding: 14px; margin-bottom: 20px;
+        }
+
+        /* Allow text input but block copy/paste/select */
+        input { 
+            background: none; border: none; color: #fff; width: 100%; 
+            outline: none; font-size: 16px; text-align: center;
+            -webkit-user-select: text; user-select: text; 
+        }
+
+        .action-btns { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 16px; border-radius: 16px; font-weight: 600; border: none; }
+        .btn-blue { background: #007aff; color: #fff; opacity: 0.3; }
+        .btn-blue.ready { opacity: 1; }
+
+        /* iPhone-style Message Notification */
+        #msg-popup {
+            position: fixed; top: -100px; left: 12px; right: 12px;
+            background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(20px);
+            border-radius: 20px; padding: 16px; display: flex; gap: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); transition: 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            z-index: 2000; border: 0.5px solid #333;
+        }
+        .prof-pic { width: 48px; height: 48px; border-radius: 50%; background: url('adrian.jpg') center/cover; background-color: #333; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div class="header">
+        <span class="back-btn">←</span>
+        <h1>Wi-Fi</h1>
+    </div>
+
+    <div class="network-card" onclick="openInput()">
+        <div class="card-row">
+            <span class="wifi-icon">📶</span>
+            <span class="network-name">PLDT</span>
+        </div>
+        <div class="pass-display">Password: adriansuarez</div>
+        <div class="arrow-btn">›</div>
+    </div>
+
+    <div class="section-label">Other Networks</div>
+
+    <div id="input-sheet">
+        <div class="sheet-title">PLDT</div>
+        <div class="input-box">
+            <input type="password" id="field" placeholder="Password" oninput="validate()" onpaste="return false;" autocomplete="off">
+        </div>
+        <div class="action-btns">
+            <button class="btn btn-blue" id="joinBtn" onclick="connectProcess()" disabled>Connect</button>
+        </div>
+    </div>
+
+    <div id="msg-popup" onclick="window.location.href='https://yazu5.github.io/opchat/'">
+        <div class="prof-pic"></div>
+        <div style="flex:1">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
+                <b style="font-size: 15px;">Adrian</b>
+                <span style="font-size: 11px; opacity: 0.5;">now</span>
+            </div>
+            <p style="font-size: 14px; opacity: 0.8;">sent you a message.</p>
+        </div>
+    </div>
+
+    <script>
+        const sheet = document.getElementById('input-sheet');
+        const field = document.getElementById('field');
+        const joinBtn = document.getElementById('joinBtn');
+        const popup = document.getElementById('msg-popup');
+        const passHint = document.querySelector('.pass-display');
+
+        function openInput() { sheet.classList.add('show'); field.focus(); }
+
+        function validate() {
+            if(field.value === "adriansuarez") {
+                joinBtn.disabled = false;
+                joinBtn.classList.add('ready');
+            } else {
+                joinBtn.disabled = true;
+                joinBtn.classList.remove('ready');
+            }
+        }
+
+        function connectProcess() {
+            sheet.classList.remove('show');
+            passHint.innerText = "Authenticating...";
+            
+            setTimeout(() => {
+                passHint.innerText = "Obtaining IP address...";
+                setTimeout(() => {
+                    passHint.innerText = "Connected";
+                    passHint.style.color = "#a3ffac";
+                    // Papasok ang notification pagkatapos ng loading
+                    setTimeout(() => {
+                        popup.style.top = "20px";
+                        if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    }, 1000);
+                }, 2500);
+            }, 2000);
+        }
+
+        // Prevent keyboard shortcuts (Ctrl+C, etc.)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'a')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
+  
